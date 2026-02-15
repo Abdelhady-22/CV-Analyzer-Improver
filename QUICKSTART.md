@@ -29,7 +29,7 @@ cp backend/.env.example backend/.env
 Edit `backend/.env` — at minimum set your Supabase credentials:
 
 ```env
-SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_URL=https://-project.supabase.co
 SUPABASE_KEY=your-anon-key
 ```
 
