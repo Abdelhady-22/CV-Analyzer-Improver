@@ -9,12 +9,10 @@ interface ScoreCardProps {
 
 function ScoreGauge({
     value,
-    label,
-    sublabel,
     color,
 }: {
     value: number;
-    label: string;
+    label?: string;
     sublabel?: string;
     color: string;
 }) {

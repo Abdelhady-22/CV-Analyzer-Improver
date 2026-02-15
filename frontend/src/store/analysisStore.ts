@@ -4,7 +4,6 @@ import { create } from 'zustand';
 import type {
     CVUploadResponse,
     AnalysisResponse,
-    PipelineStatus,
     AgentStep,
 } from '../models/types';
 
