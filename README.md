@@ -50,10 +50,11 @@ A full-stack AI-powered CV analysis and improvement platform. Upload your CV, ge
 ## 📁 Project Structure
 
 ```
-devops-project/
+CV-Analyzer-Improver/
 ├── backend/
 │   ├── main.py                 # FastAPI entry point
 │   ├── config.py               # Centralized settings
+│   ├── .env.example            # Environment template
 │   ├── models/                 # Pydantic schemas
 │   ├── repositories/           # Supabase data layer
 │   ├── services/               # Business logic (parser, scoring, editor, generator, diff)
@@ -94,7 +95,13 @@ devops-project/
 
 ## ⚙️ Configuration
 
-All config is via `.env` in the `backend/` directory:
+Copy the template and fill in your values:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Available variables in `backend/.env`:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -123,6 +130,12 @@ All config is via `.env` in the `backend/` directory:
 | `POST` | `/api/generate` | Generate new CV from data |
 | `GET` | `/api/generate/download/{id}` | Download generated CV |
 | `GET` | `/health` | Health check |
+
+---
+
+## 🚀 Getting Started
+
+See [QUICKSTART.md](QUICKSTART.md) for a step-by-step setup guide, including Supabase table creation and LLM provider setup.
 
 ---
 

@@ -20,18 +20,20 @@ git clone https://github.com/Abdelhady-22/CV-Analyzer-and-Improver.git
 cd CV-Analyzer-and-Improver
 ```
 
-Edit `backend/.env` with your credentials:
+Copy the environment template and fill in your credentials:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Edit `backend/.env` — at minimum set your Supabase credentials:
 
 ```env
-# LLM — pick one provider
-LLM_PROVIDER=ollama
-LLM_MODEL=llama3.1
-OLLAMA_BASE_URL=http://localhost:11434
-
-# Supabase
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 ```
+
+> **💡 Tip:** See `.env.example` for all available options (LLM provider, model, upload limits).
 
 ---
 
@@ -51,11 +53,15 @@ CREATE TABLE uploads (
 
 CREATE TABLE analyses (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  upload_id UUID REFERENCES uploads(id),
+  upload_id UUID REFERENCES uploads(id) ON DELETE CASCADE,
   result JSONB NOT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE INDEX idx_analyses_upload_id ON analyses(upload_id);
 ```
+
+> **New to Supabase?** Sign up free at [supabase.com](https://supabase.com), create a project, then go to **SQL Editor** → **New query** → paste the SQL above → **Run**.
 
 ---
 
