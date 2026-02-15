@@ -9,7 +9,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ── Enums ──────────────────────────────────────────────────────
@@ -89,6 +89,13 @@ class ATSIssue(BaseModel):
     description: str
     location: Optional[str] = Field(None, description="Section or paragraph reference")
 
+    @field_validator("severity", mode="before")
+    @classmethod
+    def normalize_severity(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 
 # ── Recommendations ────────────────────────────────────────────
 
@@ -99,6 +106,13 @@ class Recommendation(BaseModel):
     original_text: Optional[str] = None
     suggested_text: str
     rationale: str
+
+    @field_validator("edit_type", mode="before")
+    @classmethod
+    def normalize_edit_type(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 
 # ── Paragraph-level edits (rewrite agent output contract) ──────

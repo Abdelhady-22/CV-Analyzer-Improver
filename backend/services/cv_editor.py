@@ -94,3 +94,29 @@ def extract_text_from_docx(docx_path: str) -> str:
     """Extract full text from a DOCX for diff comparison."""
     doc = Document(docx_path)
     return "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+
+
+def create_docx_from_text(text: str, output_path: str) -> str:
+    """
+    Create a new ATS-safe DOCX from plain text.
+    Used when the original upload was a PDF (no DOCX to edit).
+    Returns the path to the created DOCX.
+    """
+    doc = Document()
+
+    # Set default font
+    style = doc.styles["Normal"]
+    font = style.font
+    font.name = FONT_NAME
+    font.size = FONT_SIZE_BODY
+    font.color.rgb = FONT_COLOR
+
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        para = doc.add_paragraph(stripped)
+        _apply_ats_style(para)
+
+    doc.save(output_path)
+    return output_path

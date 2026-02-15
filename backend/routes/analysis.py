@@ -14,7 +14,7 @@ from models.analysis import AnalysisRequest, AnalysisResponse, PipelineStatus
 from repositories.upload_repo import get_upload, update_upload_status
 from repositories.analysis_repo import create_analysis, get_analysis_by_upload
 from services.parser import parse_file
-from services.cv_editor import apply_edits, extract_text_from_docx
+from services.cv_editor import apply_edits, extract_text_from_docx, create_docx_from_text
 from services.diff_service import compute_diff
 from agents.crew import run_analysis_pipeline, get_pipeline_status
 
@@ -41,10 +41,26 @@ def _run_pipeline_background(
         diff_chunks = []
 
         if result.get("paragraph_edits") and original_path.endswith(".docx"):
+            # Original is DOCX — apply surgical edits
             from models.analysis import ParagraphEdit
             edits = [ParagraphEdit(**e) for e in result["paragraph_edits"]]
             improved_path = apply_edits(original_path, edits)
             improved_text = extract_text_from_docx(improved_path)
+            diff_chunks = [c.model_dump() for c in compute_diff(cv_text, improved_text)]
+        elif result.get("paragraph_edits") and not original_path.endswith(".docx"):
+            # Original is PDF — generate a new DOCX from improved text
+            from models.analysis import ParagraphEdit
+            from pathlib import Path
+            # Build improved text by applying edits to the original text
+            improved_text = cv_text
+            for edit_data in result["paragraph_edits"]:
+                old_text = edit_data.get("old_text", "")
+                new_text = edit_data.get("new_text", "")
+                if old_text and new_text and old_text in improved_text:
+                    improved_text = improved_text.replace(old_text, new_text, 1)
+
+            output_docx = str(Path(original_path).parent / f"{Path(original_path).stem}_improved.docx")
+            improved_path = create_docx_from_text(improved_text, output_docx)
             diff_chunks = [c.model_dump() for c in compute_diff(cv_text, improved_text)]
 
         result["rewritten_text"] = improved_text
