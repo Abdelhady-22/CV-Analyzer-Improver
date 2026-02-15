@@ -1,15 +1,14 @@
 # Quick Start Guide
 
-Get the CV Analyzer & Improver running locally in under 5 minutes.
+Get the CV Analyzer & Improver running in under 5 minutes.
 
 ---
 
 ## Prerequisites
 
-- **Python 3.10+**
-- **Node.js 18+** and **npm**
 - **Ollama** running locally (or Gemini/OpenAI API key)
 - **Supabase** project (free tier works)
+- **Docker** + **Docker Compose** (recommended) — OR Python 3.10+ and Node.js 18+
 
 ---
 
@@ -26,10 +25,10 @@ Copy the environment template and fill in your credentials:
 cp backend/.env.example backend/.env
 ```
 
-Edit `backend/.env` — at minimum set your Supabase credentials:
+Edit `backend/.env` — set your Supabase credentials:
 
 ```env
-SUPABASE_URL=https://-project.supabase.co
+SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 ```
 
@@ -39,7 +38,7 @@ SUPABASE_KEY=your-anon-key
 
 ## 2. Supabase Tables
 
-Create these tables in your Supabase dashboard (SQL Editor):
+Create these tables in your Supabase dashboard (**SQL Editor → New query → Run**):
 
 ```sql
 CREATE TABLE uploads (
@@ -59,37 +58,64 @@ CREATE TABLE analyses (
 );
 
 CREATE INDEX idx_analyses_upload_id ON analyses(upload_id);
+
+-- Enable Row Level Security
+ALTER TABLE public.uploads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all access" ON public.uploads FOR ALL USING (true) WITH CHECK (true);
+
+ALTER TABLE public.analyses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all access" ON public.analyses FOR ALL USING (true) WITH CHECK (true);
 ```
 
-> **New to Supabase?** Sign up free at [supabase.com](https://supabase.com), create a project, then go to **SQL Editor** → **New query** → paste the SQL above → **Run**.
+> **New to Supabase?** Sign up free at [supabase.com](https://supabase.com), create a project, then use the SQL Editor to run the above.
 
 ---
 
-## 3. Start Backend
+## 3. Start the App
+
+### Option A: Docker (Recommended)
 
 ```bash
+# Start Ollama on your host machine
+ollama serve
+
+# Build and launch all containers
+docker compose up --build
+```
+
+- **Frontend:** http://localhost:3000
+- **Backend:** http://localhost:8000
+- **Health:** http://localhost:8000/health
+
+```bash
+# Useful commands
+docker compose up -d             # Run in background
+docker compose logs -f backend   # Tail backend logs
+docker compose down              # Stop all containers
+```
+
+> **Note:** Ollama runs on your host machine. The backend container connects to it automatically via `host.docker.internal`.
+
+### Option B: Local Development
+
+```bash
+# Terminal 1 — Backend
 cd backend
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
-```
 
-Verify: open http://localhost:8000/health — should return `{"status": "ok"}`.
-
----
-
-## 4. Start Frontend
-
-```bash
+# Terminal 2 — Frontend
 cd frontend
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
+- **Frontend:** http://localhost:5173
+- **Backend:** http://localhost:8000
 
 ---
 
-## 5. Use the App
+## 4. Use the App
 
 1. **Upload** — drag-and-drop a PDF or DOCX CV
 2. **Analyze** — click "Analyze CV" (optionally set a target job)
@@ -115,7 +141,7 @@ LLM_MODEL=gpt-4o-mini
 OPENAI_API_KEY=your-api-key
 ```
 
-Restart the backend after changing provider settings.
+Restart the backend (or `docker compose restart backend`) after changing provider settings.
 
 ---
 
@@ -123,7 +149,11 @@ Restart the backend after changing provider settings.
 
 | Issue | Fix |
 |-------|-----|
-| `CORS error` in browser | Ensure backend runs on port 8000 and frontend on 5173 |
+| `CORS error` in browser | Ensure correct ports: 5173 (local) or 3000 (Docker) |
 | `Ollama connection refused` | Start Ollama: `ollama serve` then `ollama pull llama3.1` |
 | `Upload fails (413)` | File exceeds `MAX_FILE_SIZE_MB` (default 10 MB) |
 | `Analysis stuck` | Check backend logs for LLM timeout; try a smaller model |
+| `Supabase tables empty` | Verify `SUPABASE_URL` uses the REST URL (`https://...supabase.co`), not the PostgreSQL connection string |
+| `RLS Disabled` warning | Run the RLS SQL commands from step 2 in Supabase SQL Editor |
+| Docker: `container can't reach Ollama` | Ensure Ollama is running on host and `extra_hosts` is set in `docker-compose.yml` |
+

@@ -6,6 +6,7 @@ A full-stack AI-powered CV analysis and improvement platform. Upload your CV, ge
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![CrewAI](https://img.shields.io/badge/CrewAI-FF6B35?style=for-the-badge)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ---
 
@@ -51,22 +52,26 @@ A full-stack AI-powered CV analysis and improvement platform. Upload your CV, ge
 
 ```
 CV-Analyzer-Improver/
+├── docker-compose.yml          # Docker orchestration
 ├── backend/
+│   ├── Dockerfile              # Backend container
 │   ├── main.py                 # FastAPI entry point
 │   ├── config.py               # Centralized settings
 │   ├── .env.example            # Environment template
 │   ├── models/                 # Pydantic schemas
 │   ├── repositories/           # Supabase data layer
-│   ├── services/               # Business logic (parser, scoring, editor, generator, diff)
-│   ├── agents/                 # CrewAI agents + crew orchestrator
+│   ├── services/               # Business logic
+│   ├── agents/                 # CrewAI agents + orchestrator
 │   └── routes/                 # API endpoints
 ├── frontend/
+│   ├── Dockerfile              # Frontend container
+│   ├── nginx.conf              # Nginx reverse proxy config
 │   └── src/
 │       ├── models/types.ts     # TypeScript interfaces
 │       ├── services/api.ts     # API client
 │       ├── store/              # Zustand state management
-│       ├── components/         # 11 UI components
-│       └── routes/             # 3 page routes
+│       ├── components/         # UI components
+│       └── routes/             # Page routes
 ├── README.md
 ├── QUICKSTART.md
 └── LICENSE
@@ -90,6 +95,10 @@ CV-Analyzer-Improver/
 - **Vite** — fast dev server and build
 - **Zustand** — lightweight state management
 - **React Router** — client-side routing
+
+### DevOps
+- **Docker** + **Docker Compose** — containerized deployment
+- **Nginx** — reverse proxy and static file serving
 
 ---
 
@@ -133,9 +142,40 @@ Available variables in `backend/.env`:
 
 ---
 
-## 🚀 Getting Started
+## 🐳 Docker Deployment
 
-See [QUICKSTART.md](QUICKSTART.md) for a step-by-step setup guide, including Supabase table creation and LLM provider setup.
+```bash
+# 1. Start Ollama on your host machine
+ollama serve
+
+# 2. Configure environment
+cp backend/.env.example backend/.env
+# Edit backend/.env with your Supabase credentials
+
+# 3. Build and start all containers
+docker compose up --build
+
+# 4. Open the app
+# Frontend: http://localhost:3000
+# Backend:  http://localhost:8000
+# Health:   http://localhost:8000/health
+```
+
+Useful commands:
+
+```bash
+docker compose up -d             # Run in background
+docker compose logs -f backend   # Tail backend logs
+docker compose down              # Stop all containers
+```
+
+> **Note:** Ollama runs on your host machine, not in Docker. The backend container connects to it via `host.docker.internal`.
+
+---
+
+## 🚀 Getting Started (Local)
+
+See [QUICKSTART.md](QUICKSTART.md) for local development setup without Docker.
 
 ---
 
